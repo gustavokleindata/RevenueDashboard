@@ -1,0 +1,230 @@
+table _Measures
+	lineageTag: bf286cfa-45d2-4a90-af08-c92756da219a
+
+	measure 'Total Revenue' = sum(fact_orders[revenue])
+		formatString: \$#,0.###############;(\$#,0.###############);\$#,0.###############
+		displayFolder: Revenue
+		lineageTag: 61d5b345-915d-4f0e-b924-c2d4274aafac
+
+	measure 'Average Ticket' =
+			
+			CALCULATE(
+			    AVERAGE(fact_orders[revenue]),
+			    fact_orders[flag_cancelled] = 0,
+			    fact_orders[order_id] <> 7001094580
+			)
+		formatString: #,0.00
+		displayFolder: Revenue
+		lineageTag: 6a7b86e8-4acf-4943-bb33-333dba6fe9d2
+
+	measure 'Items ordered' = COUNT(fact_order_items[item_id])
+		formatString: 0
+		displayFolder: Itens
+		lineageTag: f06007f8-2866-4fb1-afba-c9eb7a5eea8f
+
+	measure 'Valid Orders' =
+			
+			CALCULATE(
+			    DISTINCTCOUNT(fact_orders[order_id]),
+			    fact_orders[flag_cancelled] = 0
+			)
+		formatString: 0
+		displayFolder: Orders
+		lineageTag: 6190b8e2-c5ce-4c8c-9263-7eb31a3b3b20
+
+	measure 'Cancelled Orders' =
+			
+			CALCULATE(
+			    DISTINCTCOUNT(fact_orders[order_id]),
+			    fact_orders[flag_cancelled] = 1)
+		formatString: 0
+		displayFolder: Orders
+		lineageTag: 0ff63ffe-5a1b-4b47-a693-338205020548
+
+	measure 'Cancellation rate %' =
+			
+			DIVIDE(
+			    [Cancelled Orders],
+			    [Cancelled Orders] + [Valid Orders])
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Orders
+		lineageTag: 9d6336f8-5f47-40b3-a1f5-f257defd3eaa
+
+	measure Clients =
+			
+			DISTINCTCOUNT(dim_user[user_id])
+		formatString: 0
+		displayFolder: Clientes
+		lineageTag: 146dd0b1-f189-4181-a2a2-1522daadc861
+
+	measure 'Revenue 3-Month Moving Average' =
+			
+			VAR CurrentMonth = MAX(dim_date[Month Number])
+			RETURN
+			AVERAGEX(
+			    FILTER(
+			        ALL(dim_date[Month Number]),
+			        dim_date[Month Number] >= CurrentMonth - 2 &&
+			        dim_date[Month Number] <= CurrentMonth
+			    ),
+			    CALCULATE([Monthly Revenue])
+			)
+		displayFolder: Time Intelligence
+		lineageTag: ff162634-701a-47ef-9af9-aa9b88916137
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'MoM Revenue' =
+			
+			CALCULATE(
+			    [Total Revenue],
+			    DATEADD( dim_date[Date], -1, MONTH))
+		displayFolder: Time Intelligence
+		lineageTag: d3751719-ee42-454d-bbde-43ae84a0819a
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'MoM Growth %' =
+			
+			VAR Actual = [Total Revenue]
+			VAR Previous = [MoM Revenue]
+			RETURN
+			DIVIDE( Actual - Previous, Previous)
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Time Intelligence
+		lineageTag: e2547a66-b03b-41ab-afc3-a119e2011732
+
+	measure YTD =
+			
+			TOTALYTD([Total Revenue], dim_date[Date])
+		displayFolder: Time Intelligence
+		lineageTag: a4f037d5-8a5a-4272-96b9-2d698bd70a5a
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Distinct Products' =
+			
+			DISTINCTCOUNT(fact_order_items[item_id])
+		formatString: 0
+		displayFolder: Itens
+		lineageTag: a5fb5122-1ca0-4195-8679-27447ccf2269
+
+	measure 'Itens by order' =
+			
+			DIVIDE(
+			    [Items ordered],
+			    DISTINCTCOUNT(fact_order_items[order_id])
+			)
+		formatString: #,0.00
+		displayFolder: Itens
+		lineageTag: 1bbb9476-80bf-42ad-b5b6-be352b661a5d
+
+	measure 'Iten frequency %' =
+			
+			DIVIDE(
+			    [Items ordered],
+			    CALCULATE([Items ordered], all (dim_items)))
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Itens
+		lineageTag: c7813173-db32-4c4e-8c4d-ca65ff1fe278
+
+	measure Target/Month = sum(dim_user[monthly_revenue_target])
+		formatString: \$#,0.###############;(\$#,0.###############);\$#,0.###############
+		displayFolder: Target
+		lineageTag: 4efc14e8-80bc-430c-a128-b97e095cdb81
+
+	measure 'Total Target' =
+			
+			[Target/Month] * DISTINCTCOUNT(dim_date[month name ab])
+		formatString: \$#,0.###############;(\$#,0.###############);\$#,0.###############
+		displayFolder: Target
+		lineageTag: 8b086380-e8db-449a-94e6-62f63942b269
+
+	measure 'Target Achievement %' =
+			
+			DIVIDE( [Total Revenue], [Total Target])
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: Target
+		lineageTag: b6d4e957-ba95-4134-adee-62ce07e241b3
+
+	measure 'Target Gap' = [Total Revenue] - [Total Target]
+		formatString: #,0.00
+		displayFolder: Target
+		lineageTag: fd236df0-3787-4713-9629-6117e381a05b
+
+	measure 'Farol Target' = ```
+			
+			VAR Target = [Target Achievement %]
+			RETURN
+			SWITCH (
+			        TRUE (),    
+			        ISBLANK ( Target ), "",
+			        Target >= 1,    "🟢",
+			        Target >= 0.7,  "🟡",
+			        "🔴"
+			        )
+			```
+		displayFolder: Target
+		lineageTag: fe8e4f3d-be4f-47eb-80b8-fe032b31bc3d
+
+	measure 'Collor target' =
+			
+			VAR a = [Target Achievement %]
+			RETURN
+			SWITCH(
+			    TRUE(),
+			    a >= 1, "#E8C33D", -- Amarelo para quem bateu 100% ou mais
+			    "#C0392B"          -- Vermelho para todo o restante (abaixo de 100%)
+			)
+		displayFolder: Target
+		lineageTag: 0a16bf39-c469-4d62-a75b-6cb71cf2d06c
+
+	measure '% Cliente Revenue' =
+			
+			DIVIDE([Total Revenue], CALCULATE([Total Revenue], ALL(dim_user)))
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Clientes
+		lineageTag: 56cd03fc-c0aa-4dc8-83a8-10600d9523f1
+
+	measure 'Last Update' =
+			
+			"Last Update: " &
+			FORMAT(
+			    MAX(Last_Update[Last_Update]),
+			    "dd/MM/yyyy HH:mm"
+			)
+		displayFolder: Time Intelligence
+		lineageTag: 1b6e5e2d-3901-4d96-bed7-a7ea28a00466
+
+	measure 'Monthly Revenue' =
+			
+			CALCULATE(
+			    [Total Revenue],
+			    ALLEXCEPT(dim_date, dim_date[Month Number])
+			)
+		displayFolder: Time Intelligence
+		lineageTag: 113a76f2-8992-4d8d-900b-d196e3f5ed5d
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure baseline = 0
+		formatString: 0
+		displayFolder: Support
+		lineageTag: a8c84f34-c507-42d9-8bb1-1c1178c520c7
+
+	column Value
+		isHidden
+		formatString: 0
+		lineageTag: 261cd4e5-8251-4b71-9f5e-823e2279d28f
+		summarizeBy: sum
+		isNameInferred
+		sourceColumn: [Value]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition _Measures = calculated
+		mode: import
+		source = {1}
+
+	annotation PBI_Id = 48060d21a98f4709aaeb8cfe29172d1d
+

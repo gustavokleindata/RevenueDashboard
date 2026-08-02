@@ -1,0 +1,49 @@
+table dim_items
+	lineageTag: 5d50b393-0696-447c-b14b-d7e134933761
+
+	column item_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 9623de17-cc92-41c6-85a3-d1b164f1b53c
+		summarizeBy: none
+		sourceColumn: item_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column item_category
+		dataType: string
+		lineageTag: adf2367a-04e4-4aef-ae2b-8859ec09551a
+		summarizeBy: none
+		sourceColumn: item_category
+
+		annotation SummarizationSetBy = Automatic
+
+	column item_name
+		dataType: string
+		lineageTag: 28d41f01-22d6-461c-ba72-80481bda185c
+		summarizeBy: none
+		sourceColumn: item_name
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_items = m
+		mode: import
+		source =
+				let
+				    Fonte = Excel.Workbook(File.Contents("C:\Users\gusta\OneDrive\Área de Trabalho\Cursos\projetos\revenue_dashboard\data\items.xlsx"), null, true),
+				    items_Sheet = Fonte{[Item="items",Kind="Sheet"]}[Data],
+				    #"Cabeçalhos Promovidos" = Table.PromoteHeaders(items_Sheet, [PromoteAllScalars=true]),
+				    #"Tipo Alterado" = Table.TransformColumnTypes(#"Cabeçalhos Promovidos",{{"item_id", Int64.Type}, {"category", type text}, {"product_name", type text}}),
+				    #"Colunas Renomeadas" = Table.RenameColumns(#"Tipo Alterado",{{"category", "item_category"}, {"product_name", "item_name"}}),
+				    #"Linhas Filtradas" = Table.SelectRows(#"Colunas Renomeadas", each ([item_category] <> null)),
+				    #"Duplicatas Removidas" = Table.Distinct(#"Linhas Filtradas", {"item_id"})
+				in
+				    #"Duplicatas Removidas"
+
+	annotation PBI_NavigationStepName = Navegação
+
+	annotation PBI_ResultType = Table
+

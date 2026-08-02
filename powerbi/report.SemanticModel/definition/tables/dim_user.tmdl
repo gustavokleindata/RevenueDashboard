@@ -1,0 +1,74 @@
+table dim_user
+	lineageTag: 6bf9109e-276b-42c1-af86-cb8e0b5e320b
+
+	column user_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 9448d4d9-f36d-4e30-9da8-f732217a25d1
+		summarizeBy: none
+		sourceColumn: user_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column user_category
+		dataType: string
+		lineageTag: eae5b8aa-0553-473f-b779-f062b6f4bf3c
+		summarizeBy: none
+		sourceColumn: user_category
+
+		annotation SummarizationSetBy = Automatic
+
+	column city
+		dataType: string
+		lineageTag: 57fbe283-d37f-4b8c-8fc3-9005514ddea1
+		summarizeBy: none
+		sourceColumn: city
+
+		annotation SummarizationSetBy = Automatic
+
+	column monthly_revenue_target
+		dataType: int64
+		formatString: #,0.00
+		lineageTag: 13b13b08-db96-42d7-a105-6ebff271a868
+		summarizeBy: sum
+		sourceColumn: monthly_revenue_target
+
+		annotation SummarizationSetBy = Automatic
+
+	column uf
+		dataType: string
+		lineageTag: 3436df09-be23-4f96-8adc-8c875bf20aec
+		summarizeBy: none
+		sourceColumn: uf
+
+		annotation SummarizationSetBy = Automatic
+
+	column user_name
+		dataType: string
+		lineageTag: 71b4dcaf-07a1-45c2-a618-bf6091268647
+		summarizeBy: none
+		sourceColumn: user_name
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_user = m
+		mode: import
+		source =
+				let
+				    Fonte = Excel.Workbook(File.Contents("C:\Users\gusta\OneDrive\Área de Trabalho\Cursos\projetos\revenue_dashboard\data\users.xlsx"), null, true),
+				    Sheet1_Sheet = Fonte{[Item="Sheet1",Kind="Sheet"]}[Data],
+				    #"Cabeçalhos Promovidos" = Table.PromoteHeaders(Sheet1_Sheet, [PromoteAllScalars=true]),
+				    #"Tipo Alterado" = Table.TransformColumnTypes(#"Cabeçalhos Promovidos",{{"user_id", Int64.Type}, {"customer_name", type text}, {"category", type text}, {"city", type text}, {"monthly revenue target", Int64.Type}}),
+				    #"Outras Colunas Removidas" = Table.SelectColumns(#"Tipo Alterado",{"user_id", "customer_name", "category", "city", "monthly revenue target"}),
+				    #"Colunas Renomeadas" = Table.RenameColumns(#"Outras Colunas Removidas",{{"category", "user_category"}, {"monthly revenue target", "monthly_revenue_target"}, {"customer_name", "user_name"}}),
+				    #"Coluna Condicional Adicionada" = Table.AddColumn(#"Colunas Renomeadas", "uf", each if [city] = "Sao Paulo" then "sp" else if [city] = "Rio de Janeiro" then "rj" else if [city] = "Ribeirao Preto" then "sp" else if [city] = "Curitiba" then "pr" else if [city] = "Brasilia" then "df" else if [city] = "Niteroi" then "rj" else if [city] = "Londrina" then "pr" else if [city] = "Taguatinga" then "df" else null)
+				in
+				    #"Coluna Condicional Adicionada"
+
+	annotation PBI_NavigationStepName = Navegação
+
+	annotation PBI_ResultType = Table
+

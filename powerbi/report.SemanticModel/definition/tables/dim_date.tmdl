@@ -1,0 +1,154 @@
+table dim_date
+	lineageTag: cbe290cb-a5ac-4e22-b13f-b61f3579fd69
+	dataCategory: Time
+
+	column Date
+		dataType: dateTime
+		isKey
+		formatString: Long Date
+		lineageTag: d51649d1-296a-4610-8926-48b22170bce4
+		summarizeBy: none
+		sourceColumn: Date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column Year
+		dataType: int64
+		formatString: 0
+		lineageTag: a2b0bce0-328f-4f07-bec8-efe0ae16c767
+		summarizeBy: sum
+		sourceColumn: Year
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Month Name'
+		dataType: string
+		lineageTag: 44e8117e-656b-4c82-a789-9ba08027918d
+		summarizeBy: none
+		sourceColumn: Month Name
+		sortByColumn: 'Month Number'
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = Automatic
+
+	column Quarter
+		dataType: int64
+		formatString: 0
+		lineageTag: 319324b9-f2dd-443f-8b14-c55c4d3f4bd3
+		summarizeBy: sum
+		sourceColumn: Quarter
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Week of Year'
+		dataType: int64
+		formatString: 0
+		lineageTag: 8fbee40b-f4e7-4420-813f-8f9a45747eab
+		summarizeBy: sum
+		sourceColumn: Week of Year
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Week of Month'
+		dataType: int64
+		formatString: 0
+		lineageTag: 5ae74e50-edc8-4135-9dd9-60c38775d4d8
+		summarizeBy: sum
+		sourceColumn: Week of Month
+
+		annotation SummarizationSetBy = Automatic
+
+	column Day
+		dataType: int64
+		formatString: 0
+		lineageTag: b7f8962e-c13c-49b3-b01f-d978d0e404d2
+		summarizeBy: sum
+		sourceColumn: Day
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Day of Year'
+		dataType: int64
+		formatString: 0
+		lineageTag: 5c688d1c-37b3-421d-a041-0f5126c0ed9f
+		summarizeBy: sum
+		sourceColumn: Day of Year
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Day of Week'
+		dataType: int64
+		formatString: 0
+		lineageTag: 73d10171-45c4-41bb-92b9-4b215585d39d
+		summarizeBy: sum
+		sourceColumn: Day of Week
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Day Name'
+		dataType: string
+		lineageTag: 2c8f3ef2-39a5-4652-bd51-e04c2c2b08e8
+		summarizeBy: none
+		sourceColumn: Day Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Month Number'
+		dataType: int64
+		formatString: 0
+		lineageTag: 68344f56-1319-4602-99a5-1066cf9b16bc
+		summarizeBy: sum
+		sourceColumn: Month Number
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'month name ab'
+		dataType: string
+		lineageTag: 3b5c54f6-9851-41b3-8f11-8ad0267142c7
+		summarizeBy: none
+		sourceColumn: month name ab
+		sortByColumn: 'Month Number'
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_date = m
+		mode: import
+		source =
+				let
+				    StartDate = Date.From(List.Min(fact_orders[order_date])),
+				    EndDate = Date.From(List.Max(fact_orders[order_date])),
+				
+				    TotalDays = Duration.Days(EndDate - StartDate) + 1,
+				
+				    CalendarTable =
+				        Table.FromList(
+				            List.Dates(StartDate, TotalDays, #duration(1,0,0,0)),
+				            Splitter.SplitByNothing(),
+				            {"Date"}
+				        ),
+				
+				    ChangedType = Table.TransformColumnTypes(CalendarTable, {{"Date", type date}}),
+				
+				    AddYear = Table.AddColumn(ChangedType, "Year", each Date.Year([Date]), Int64.Type),
+				    AddMonthNumber = Table.AddColumn(AddYear, "Month Number", each Date.Month([Date]), Int64.Type),
+				    AddMonthName = Table.AddColumn(AddMonthNumber, "Month Name", each Date.MonthName([Date], "en-US"), type text),
+				    AddQuarter = Table.AddColumn(AddMonthName, "Quarter", each Date.QuarterOfYear([Date]), Int64.Type),
+				    AddWeekOfYear = Table.AddColumn(AddQuarter, "Week of Year", each Date.WeekOfYear([Date]), Int64.Type),
+				    AddWeekOfMonth = Table.AddColumn(AddWeekOfYear, "Week of Month", each Date.WeekOfMonth([Date]), Int64.Type),
+				    AddDay = Table.AddColumn(AddWeekOfMonth, "Day", each Date.Day([Date]), Int64.Type),
+				    AddDayOfYear = Table.AddColumn(AddDay, "Day of Year", each Date.DayOfYear([Date]), Int64.Type),
+				    AddDayOfWeek = Table.AddColumn(AddDayOfYear, "Day of Week", each Date.DayOfWeek([Date], Day.Monday) + 1, Int64.Type),
+				    AddDayName = Table.AddColumn(AddDayOfWeek, "Day Name", each Date.DayOfWeekName([Date], "en-US"), type text),
+				    #"Primeiros Caracteres Inseridos" = Table.AddColumn(AddDayName, "month name ab", each Text.Start([Month Name], 3), type text)
+				in
+				    #"Primeiros Caracteres Inseridos"
+
+	annotation PBI_NavigationStepName = Navegação
+
+	annotation PBI_ResultType = Table
+

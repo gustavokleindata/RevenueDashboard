@@ -1,0 +1,20 @@
+relationship 7f4e99a6-a85d-c40d-6dd0-bde685131ea6
+	fromColumn: fact_order_items.user_id
+	toColumn: dim_user.user_id
+
+relationship 9bb7193e-0589-f3a7-72e8-bf9c5e98d248
+	fromColumn: fact_orders.user_id
+	toColumn: dim_user.user_id
+
+relationship 76350ed3-0c66-683f-6cdf-ef8ed1010a32
+	fromColumn: fact_orders.order_date
+	toColumn: dim_date.Date
+
+relationship 6d350d1b-2ef7-fbe9-053d-587aaff586f9
+	fromColumn: fact_order_items.order_date
+	toColumn: dim_date.Date
+
+relationship 2f8412db-6669-ba6d-cde8-c3884b379b9e
+	fromColumn: fact_order_items.item_id
+	toColumn: dim_items.item_id
+

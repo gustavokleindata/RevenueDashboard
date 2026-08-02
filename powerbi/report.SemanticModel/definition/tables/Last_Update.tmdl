@@ -1,0 +1,25 @@
+table Last_Update
+	lineageTag: c35906ad-b1ae-42be-8907-13fac853bae3
+
+	column Last_Update
+		dataType: string
+		lineageTag: 7551abb9-c5b6-4523-ae6e-5177ad72bc2a
+		summarizeBy: none
+		sourceColumn: Last_Update
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Last_Update = m
+		mode: import
+		source =
+				let
+				    Fonte = DateTime.LocalNow(),
+				    #"Convertido para Tabela" = #table(1, {{Fonte}}),
+				    #"Colunas Renomeadas" = Table.RenameColumns(#"Convertido para Tabela",{{"Column1", "Last_Update"}})
+				in
+				    #"Colunas Renomeadas"
+
+	annotation PBI_NavigationStepName = Navegação
+
+	annotation PBI_ResultType = Table
+

@@ -1,0 +1,68 @@
+table fact_order_items
+	lineageTag: c7e35848-5714-4cc1-831e-f8a973579203
+
+	column order_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 631b12f1-dd34-4abd-8a3e-188fa2956bfb
+		summarizeBy: sum
+		sourceColumn: order_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column order_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: f7e500e3-1ca7-49a9-936c-410e59a8b9c2
+		summarizeBy: none
+		sourceColumn: order_date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column user_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: fc315564-3d2a-49d3-8c2d-ba681d6ad495
+		summarizeBy: none
+		sourceColumn: user_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column item_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 691e9f02-060f-4532-8711-b560e2f35d27
+		summarizeBy: none
+		sourceColumn: item_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fact_order_items = m
+		mode: import
+		source =
+				let
+				    Fonte = Excel.Workbook(File.Contents("C:\Users\gusta\OneDrive\Área de Trabalho\Cursos\projetos\revenue_dashboard\data\orders.xlsx"), null, true),
+				    orders_Sheet = Fonte{[Item="orders",Kind="Sheet"]}[Data],
+				    #"Cabeçalhos Promovidos" = Table.PromoteHeaders(orders_Sheet, [PromoteAllScalars=true]),
+				    #"Tipo Alterado" = Table.TransformColumnTypes(#"Cabeçalhos Promovidos",{{"order_id", Int64.Type}, {"order_date", type date}, {"user_id", Int64.Type}, {"product_id", Int64.Type}, {"revenue", type number}}),
+				    #"Outras Colunas Removidas" = Table.SelectColumns(#"Tipo Alterado",{"order_id", "order_date", "user_id", "product_id"}),
+				    #"Duplicatas Removidas" = Table.Distinct(#"Outras Colunas Removidas"),
+				    #"Colunas Renomeadas" = Table.RenameColumns(#"Duplicatas Removidas",{{"product_id", "item_id"}})
+				in
+				    #"Colunas Renomeadas"
+
+	annotation PBI_NavigationStepName = Navegação
+
+	annotation PBI_ResultType = Table
+

@@ -1,0 +1,25 @@
+model Model
+	culture: pt-BR
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: pt-BR
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation __PBI_TimeIntelligenceEnabled = 1
+
+annotation PBI_QueryOrder = ["dim_items","fact_orders","dim_user","fact_order_items","dim_date","Last_Update"]
+
+annotation PBI_ProTooling = ["DevMode"]
+
+ref table dim_items
+ref table fact_orders
+ref table dim_user
+ref table fact_order_items
+ref table dim_date
+ref table _Measures
+ref table 'Exibition mode'
+ref table Last_Update
+
+ref cultureInfo pt-BR
+

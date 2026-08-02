@@ -1,0 +1,48 @@
+table 'Exibition mode'
+	lineageTag: 4ac505b5-a603-4018-b464-676b2b6051d9
+
+	column 'Exibition mode'
+		lineageTag: 15855b12-67f2-4542-b05b-5cee5b0cd673
+		summarizeBy: none
+		sourceColumn: [Value1]
+		sortByColumn: 'Exibition mode Pedido'
+
+		relatedColumnDetails
+			groupByColumn: 'Exibition mode Campos'
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Exibition mode Campos'
+		isHidden
+		lineageTag: 43074958-94e3-4c3a-8061-85f6ce476993
+		summarizeBy: none
+		sourceColumn: [Value2]
+		sortByColumn: 'Exibition mode Pedido'
+
+		extendedProperty ParameterMetadata =
+				{
+				  "version": 3,
+				  "kind": 2
+				}
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Exibition mode Pedido'
+		isHidden
+		formatString: 0
+		lineageTag: d0c757e0-853b-47ca-ac2f-5b009ba09070
+		summarizeBy: sum
+		sourceColumn: [Value3]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Exibition mode' = calculated
+		mode: import
+		source =
+				{
+				    ("Items ordered", NAMEOF('_Measures'[Items ordered]), 0),
+				    ("Iten frequency %", NAMEOF('_Measures'[Iten frequency %]), 1)
+				}
+
+	annotation PBI_Id = fb06a1aa2c734add8a6ed9065c75b706
+
