@@ -61,7 +61,7 @@ The project maps dimension tables (`dim_date`, `dim_user`, `dim_items`) directly
 Due to the complete absence of unit price or individual item volume records, `fact_order_items` was strategically leveraged as an alternative analytics engine. Business indicators were calculated using **item frequency of occurrence** and **transactional volume distributions**, successfully delivering operational clarity despite baseline schema constraints.
 
 ### 4. Conformed Dimensions (Preventing Many-to-Many Mappings)
-Cross-filtering workflows between `fact_orders` and `fact_order_items` flow safely through conformed dimensions (`dim_date` and `dim_user`). This setup forces traditional $1:*$ relationships, intentionally **eliminating complex Many-to-Many ($*:*$) dependencies** or bidirectional performance drops.
+Cross-filtering workflows between `fact_orders` and `fact_order_items` flow safely through conformed dimensions (`dim_date` and `dim_user`). This setup forces traditional 1:* relationships, intentionally **eliminating complex Many-to-Many (*:*) dependencies** or bidirectional performance drops.
 
 ### 5. Denormalized 1:1 Target Integration
 Commercial goals were integrated directly into the `dim_user` structure. Because the business goals were provided as fixed baseline numbers per client (lacking monthly variance or historical shifts), merging them via a clean $1:1$ architecture streamlined model footprint size and lowered DAX processing overhead.
