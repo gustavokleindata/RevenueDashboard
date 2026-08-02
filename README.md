@@ -48,8 +48,6 @@ The back-end database schema was engineered strictly around standard corporate d
 
 <img width="1254" height="785" alt="image" src="https://github.com/user-attachments/assets/e03b4452-ab22-442d-a772-0c9123d1c093" />
 
-*(Note: Ensure you upload your model image to your GitHub repository and update this URL if necessary)*
-
 ### 1. Robust Star Schema Design
 The project maps dimension tables (`dim_date`, `dim_user`, `dim_items`) directly into operational fact tables. This decoupled topography ensures clear calculation paths and optimized database querying.
 
